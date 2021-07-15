@@ -1,306 +1,306 @@
 {
-  "description": "Barry the Barista-Bot",
-  "states": [
-    {
-      "name": "Trigger",
-      "type": "trigger",
-      "transitions": [
-        {
-          "next": "send_and_reply_1",
-          "event": "incomingMessage"
-        },
-        {
-          "event": "incomingCall"
-        },
-        {
-          "event": "incomingRequest"
+    "description": "Barry the Barista-Bot",
+    "states": [
+      {
+        "name": "Trigger",
+        "type": "trigger",
+        "transitions": [
+          {
+            "next": "send_and_reply_1",
+            "event": "incomingMessage"
+          },
+          {
+            "event": "incomingCall"
+          },
+          {
+            "event": "incomingRequest"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": 20,
+            "y": -170
+          }
         }
-      ],
-      "properties": {
-        "offset": {
-          "x": 20,
-          "y": -170
+      },
+      {
+        "name": "send_and_reply_1",
+        "type": "send-and-wait-for-reply",
+        "transitions": [
+          {
+            "next": "split_order",
+            "event": "incomingMessage"
+          },
+          {
+            "next": "send_and_reply_2",
+            "event": "timeout"
+          },
+          {
+            "event": "deliveryFailure"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": -20,
+            "y": -20
+          },
+          "from": "{{flow.channel.address}}",
+          "body": "Hi, this is Preeti. Thank you for testing my first twilio flow. I am very thrilled to learn about the amazing products from Twilio. Would you like to know more about me?",
+          "timeout": "3600"
+        }
+      },
+      {
+        "name": "send_and_reply_2",
+        "type": "send-and-wait-for-reply",
+        "transitions": [
+          {
+            "next": "split_order",
+            "event": "incomingMessage"
+          },
+          {
+            "next": "send_message_3",
+            "event": "timeout"
+          },
+          {
+            "event": "deliveryFailure"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": 190,
+            "y": 230
+          },
+          "from": "{{flow.channel.address}}",
+          "body": "Seems like you might really need that caffeine after all! We're here to help. Enter your order and we'll start brewing your coffee right away. Options include latte, cappuccino, americano, cortado, or cold brew.",
+          "timeout": "3600"
+        }
+      },
+      {
+        "name": "split_order",
+        "type": "split-based-on",
+        "transitions": [
+          {
+            "next": "send_and_reply_connecting",
+            "event": "noMatch"
+          },
+          {
+            "next": "send_and_reply_3",
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "Positive",
+                "arguments": [
+                  "{{widgets.send_and_reply_1.inbound.Body}}"
+                ],
+                "type": "matches_any_of",
+                "value": "y, Yes, Of course, Sure, Definitely, Yes Please"
+              }
+            ]
+          }
+        ],
+        "properties": {
+          "input": "{{widgets.send_and_reply_1.inbound.Body}}",
+          "offset": {
+            "x": -430,
+            "y": 330
+          }
+        }
+      },
+      {
+        "name": "send_and_reply_connecting",
+        "type": "send-and-wait-for-reply",
+        "transitions": [
+          {
+            "next": "split_confirm",
+            "event": "incomingMessage"
+          },
+          {
+            "next": "send_message_3",
+            "event": "timeout"
+          },
+          {
+            "event": "deliveryFailure"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": -590,
+            "y": 580
+          },
+          "from": "{{flow.channel.address}}",
+          "body": "I'm still learning because I believe 'We never stop learning in life' :)\nUp for a quick call?",
+          "timeout": "180"
+        }
+      },
+      {
+        "name": "split_confirm",
+        "type": "split-based-on",
+        "transitions": [
+          {
+            "event": "noMatch"
+          },
+          {
+            "next": "call_Preeti",
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "y, yes",
+                "arguments": [
+                  "{{widgets.send_and_reply_connecting.inbound.Body}}"
+                ],
+                "type": "matches_any_of",
+                "value": "y, yes"
+              }
+            ]
+          }
+        ],
+        "properties": {
+          "input": "{{widgets.send_and_reply_connecting.inbound.Body}}",
+          "offset": {
+            "x": -770,
+            "y": 860
+          }
+        }
+      },
+      {
+        "name": "call_Preeti",
+        "type": "make-outgoing-call-v1",
+        "transitions": [
+          {
+            "next": "connect_call_1",
+            "event": "answered"
+          },
+          {
+            "event": "answeredByMachine"
+          },
+          {
+            "next": "send_message_3",
+            "event": "busy"
+          },
+          {
+            "next": "send_message_3",
+            "event": "noAnswer"
+          },
+          {
+            "event": "failed"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": -180,
+            "y": 1300
+          },
+          "record": false,
+          "from": "{{flow.channel.address}}",
+          "to": "{{contact.channel.address}}"
+        }
+      },
+      {
+        "name": "send_and_reply_3",
+        "type": "send-and-wait-for-reply",
+        "transitions": [
+          {
+            "next": "split_confirm2",
+            "event": "incomingMessage"
+          },
+          {
+            "next": "send_message_3",
+            "event": "timeout"
+          },
+          {
+            "event": "deliveryFailure"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": 330,
+            "y": 590
+          },
+          "service": "{{trigger.message.InstanceSid}}",
+          "channel": "{{trigger.message.ChannelSid}}",
+          "from": "{{flow.channel.address}}",
+          "body": "Thank you for your response. Find my LinkedIn Profile at - https://www.linkedin.com/in/mehtapreeti09/\nWould you like to connect with me on call?",
+          "timeout": "3600"
+        }
+      },
+      {
+        "name": "split_confirm2",
+        "type": "split-based-on",
+        "transitions": [
+          {
+            "event": "noMatch"
+          },
+          {
+            "next": "call_Preeti",
+            "event": "match",
+            "conditions": [
+              {
+                "friendly_name": "Positive",
+                "arguments": [
+                  "{{widgets.send_and_reply_3_connecting.inbound.Body}}"
+                ],
+                "type": "equal_to",
+                "value": "y, Yes, Of course, Sure, Definitely, Yes Please"
+              }
+            ]
+          }
+        ],
+        "properties": {
+          "input": "{{widgets.send_and_reply_3_connecting.inbound.Body}}",
+          "offset": {
+            "x": 330,
+            "y": 890
+          }
+        }
+      },
+      {
+        "name": "send_message_3",
+        "type": "send-message",
+        "transitions": [
+          {
+            "event": "sent"
+          },
+          {
+            "event": "failed"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": -100,
+            "y": 780
+          },
+          "service": "{{trigger.message.InstanceSid}}",
+          "channel": "{{trigger.message.ChannelSid}}",
+          "from": "{{flow.channel.address}}",
+          "to": "{{contact.channel.address}}",
+          "body": "Thank you for testing my first(of many more to come) Twilio application. This was fun.\n\nHope you have a lovely day ahead :)"
+        }
+      },
+      {
+        "name": "connect_call_1",
+        "type": "connect-call-to",
+        "transitions": [
+          {
+            "event": "callCompleted"
+          },
+          {
+            "event": "hangup"
+          }
+        ],
+        "properties": {
+          "offset": {
+            "x": -160,
+            "y": 1570
+          },
+          "caller_id": "{{contact.channel.address}}",
+          "noun": "number",
+          "to": "+61434478078",
+          "timeout": 30
         }
       }
-    },
-    {
-      "name": "send_and_reply_1",
-      "type": "send-and-wait-for-reply",
-      "transitions": [
-        {
-          "next": "split_order",
-          "event": "incomingMessage"
-        },
-        {
-          "next": "send_and_reply_2",
-          "event": "timeout"
-        },
-        {
-          "event": "deliveryFailure"
-        }
-      ],
-      "properties": {
-        "offset": {
-          "x": -20,
-          "y": -20
-        },
-        "from": "{{flow.channel.address}}",
-        "body": "Thank you for testing my first twilio flow. I am very thrilled to learn about the amazing products from Twilio. Would you like to know more about me?",
-        "timeout": "3600"
-      }
-    },
-    {
-      "name": "send_and_reply_2",
-      "type": "send-and-wait-for-reply",
-      "transitions": [
-        {
-          "next": "split_order",
-          "event": "incomingMessage"
-        },
-        {
-          "next": "send_message_3",
-          "event": "timeout"
-        },
-        {
-          "event": "deliveryFailure"
-        }
-      ],
-      "properties": {
-        "offset": {
-          "x": 190,
-          "y": 230
-        },
-        "from": "{{flow.channel.address}}",
-        "body": "Seems like you might really need that caffeine after all! We're here to help. Enter your order and we'll start brewing your coffee right away. Options include latte, cappuccino, americano, cortado, or cold brew.",
-        "timeout": "3600"
-      }
-    },
-    {
-      "name": "split_order",
-      "type": "split-based-on",
-      "transitions": [
-        {
-          "next": "send_and_reply_connecting",
-          "event": "noMatch"
-        },
-        {
-          "next": "send_and_reply_3",
-          "event": "match",
-          "conditions": [
-            {
-              "friendly_name": "Positive",
-              "arguments": [
-                "{{widgets.send_and_reply_1.inbound.Body}}"
-              ],
-              "type": "matches_any_of",
-              "value": "y, Yes, Of course, Sure, Definitely, Yes Please"
-            }
-          ]
-        }
-      ],
-      "properties": {
-        "input": "{{widgets.send_and_reply_1.inbound.Body}}",
-        "offset": {
-          "x": -430,
-          "y": 330
-        }
-      }
-    },
-    {
-      "name": "send_and_reply_connecting",
-      "type": "send-and-wait-for-reply",
-      "transitions": [
-        {
-          "next": "split_confirm",
-          "event": "incomingMessage"
-        },
-        {
-          "next": "send_message_3",
-          "event": "timeout"
-        },
-        {
-          "event": "deliveryFailure"
-        }
-      ],
-      "properties": {
-        "offset": {
-          "x": -590,
-          "y": 580
-        },
-        "from": "{{flow.channel.address}}",
-        "body": "I'm still learning because I believe 'We never stop learning in life' :)\nUp for a quick call?",
-        "timeout": "180"
-      }
-    },
-    {
-      "name": "split_confirm",
-      "type": "split-based-on",
-      "transitions": [
-        {
-          "event": "noMatch"
-        },
-        {
-          "next": "call_Preeti",
-          "event": "match",
-          "conditions": [
-            {
-              "friendly_name": "y, yes",
-              "arguments": [
-                "{{widgets.send_and_reply_connecting.inbound.Body}}"
-              ],
-              "type": "matches_any_of",
-              "value": "y, yes"
-            }
-          ]
-        }
-      ],
-      "properties": {
-        "input": "{{widgets.send_and_reply_connecting.inbound.Body}}",
-        "offset": {
-          "x": -770,
-          "y": 860
-        }
-      }
-    },
-    {
-      "name": "call_Preeti",
-      "type": "make-outgoing-call-v1",
-      "transitions": [
-        {
-          "next": "connect_call_1",
-          "event": "answered"
-        },
-        {
-          "event": "answeredByMachine"
-        },
-        {
-          "next": "send_message_3",
-          "event": "busy"
-        },
-        {
-          "next": "send_message_3",
-          "event": "noAnswer"
-        },
-        {
-          "event": "failed"
-        }
-      ],
-      "properties": {
-        "offset": {
-          "x": -180,
-          "y": 1300
-        },
-        "record": false,
-        "from": "{{flow.channel.address}}",
-        "to": "{{contact.channel.address}}"
-      }
-    },
-    {
-      "name": "send_and_reply_3",
-      "type": "send-and-wait-for-reply",
-      "transitions": [
-        {
-          "next": "split_confirm2",
-          "event": "incomingMessage"
-        },
-        {
-          "next": "send_message_3",
-          "event": "timeout"
-        },
-        {
-          "event": "deliveryFailure"
-        }
-      ],
-      "properties": {
-        "offset": {
-          "x": 330,
-          "y": 590
-        },
-        "service": "{{trigger.message.InstanceSid}}",
-        "channel": "{{trigger.message.ChannelSid}}",
-        "from": "{{flow.channel.address}}",
-        "body": "Thank you for your response. Find my LinkedIn Profile at - https://www.linkedin.com/in/mehtapreeti09/\nWould you like to connect with me on call?",
-        "timeout": "3600"
-      }
-    },
-    {
-      "name": "split_confirm2",
-      "type": "split-based-on",
-      "transitions": [
-        {
-          "event": "noMatch"
-        },
-        {
-          "next": "call_Preeti",
-          "event": "match",
-          "conditions": [
-            {
-              "friendly_name": "Positive",
-              "arguments": [
-                "{{widgets.send_and_reply_3_connecting.inbound.Body}}"
-              ],
-              "type": "equal_to",
-              "value": "y, Yes, Of course, Sure, Definitely, Yes Please"
-            }
-          ]
-        }
-      ],
-      "properties": {
-        "input": "{{widgets.send_and_reply_3_connecting.inbound.Body}}",
-        "offset": {
-          "x": 330,
-          "y": 890
-        }
-      }
-    },
-    {
-      "name": "send_message_3",
-      "type": "send-message",
-      "transitions": [
-        {
-          "event": "sent"
-        },
-        {
-          "event": "failed"
-        }
-      ],
-      "properties": {
-        "offset": {
-          "x": -100,
-          "y": 780
-        },
-        "service": "{{trigger.message.InstanceSid}}",
-        "channel": "{{trigger.message.ChannelSid}}",
-        "from": "{{flow.channel.address}}",
-        "to": "{{contact.channel.address}}",
-        "body": "Thank you for testing my first(of many more to come) Twilio application. This was fun.\n\nHope you have a lovely day ahead :)"
-      }
-    },
-    {
-      "name": "connect_call_1",
-      "type": "connect-call-to",
-      "transitions": [
-        {
-          "event": "callCompleted"
-        },
-        {
-          "event": "hangup"
-        }
-      ],
-      "properties": {
-        "offset": {
-          "x": -160,
-          "y": 1570
-        },
-        "caller_id": "{{contact.channel.address}}",
-        "noun": "number",
-        "to": "+61434478078",
-        "timeout": 30
-      }
+    ],
+    "initial_state": "Trigger",
+    "flags": {
+      "allow_concurrent_calls": true
     }
-  ],
-  "initial_state": "Trigger",
-  "flags": {
-    "allow_concurrent_calls": true
   }
-}
